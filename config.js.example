@@ -1,0 +1,9 @@
+module.exports = {
+  port: 9443,
+  key_path: 'server.key',
+  cert_path: 'server.crt',
+  db_host: 'localhost',
+  db_user: 'ulinux',
+  db_pass: 'ulinux',
+  db_database: 'ulinux',
+};
