@@ -13,6 +13,9 @@
     "hapi": "^13.0.0",
     "hapi-auth-bearer-simple": "^3.0.2",
     "mysql": "^2.10.2",
-    "openpgp": "^1.5.7"
+    "openpgp": "^1.5.7",
+    "request-promise": "^2.0.0",
+    "ssl-root-cas": "^1.1.10",
+    "underscore": "^1.8.3"
   }
 }

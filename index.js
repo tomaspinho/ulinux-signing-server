@@ -29,8 +29,8 @@ server.connection({
 
 const validateFunction = function (token, callback) {
   let userCredentials = {}
-  if (token === config.ss_token) {
-    userCredentials.scope = 'ss';
+  if (token === config.dev_token) {
+    userCredentials.scope = 'dev';
     callback(null, true, userCredentials);
   } else {
     callback(null, false, userCredentials);
