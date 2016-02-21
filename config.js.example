@@ -11,8 +11,14 @@ module.exports = {
   db_database: 'ulinux',
 
   update_server: 'localhost:8443',
-  update_server_cert: 'update_server.crt',
+  update_server_ca_cert: 'update_server_ca.crt',
   update_server_ss_token: '',
 
   dev_token: '',
-  };
+
+  image: {
+    signing_privkey: 'signing_privkey.pgp',
+    signing_privkey_passphrase: 'randompassword',
+    signing_pubkey: 'signing_pubkey.pgp',
+  },
+};

@@ -10,13 +10,8 @@ const rp = require('request-promise');
 
 module.exports = function (config, db) {
 
-  require('ssl-root-cas/latest')
-    .inject()
-    .addFile(Path.join(__dirname, '..', config.update_server_cert));
-
   const updateServerOptions = {
-    cert: fs.readFileSync(Path.join(__dirname, '..', config.cert_path)),
-    key: fs.readFileSync(Path.join(__dirname, '..', config.key_path)),
+    ca: fs.readFileSync(Path.join(__dirname, '..', config.update_server_ca_cert)),
     rejectUnauthorized: true,
   };
 
@@ -44,10 +39,15 @@ module.exports = function (config, db) {
           // Post to update server
           let options = _.extend({
             url: `https://${config.update_server}/updates/`,
+            headers: {
+              Authorization: `Bearer ${config.update_server_ss_token}`,
+            },
             formData: {
               file: fs.createReadStream(path_signed),
             },
           }, updateServerOptions);
+
+          console.log(updateServerOptions);
 
           rp.post(options)
             .then(function (response) {
@@ -57,6 +57,7 @@ module.exports = function (config, db) {
             .catch(function (err) {
               console.log(`Error happened while uploading image: ${path_signed}`,
                 err);
+              console.log(err.cause)
               return reply({ success: false });
             });
 
@@ -72,6 +73,7 @@ module.exports = function (config, db) {
       },
       payload: {
         output: 'stream',
+        maxBytes: config.image_maxsize,
       },
     },
   };
