@@ -21,6 +21,7 @@ module.exports = function (config, db) {
     path: '/updates/',
     handler: (request, reply) => {
       let data = request.payload;
+      console.log('Client is uploading a new update.');
       if (data.file) {
         let name = Date.now() + '_' + data.file.hapi.filename;
         let path_unsigned = Path.join(__dirname, '..', 'device_images/unsigned/', name);
@@ -35,12 +36,16 @@ module.exports = function (config, db) {
         data.file.pipe(file_unsigned);
 
         data.file.on('end', function () {
+          console.log('Server is signing a new update.');
+
           let fileOnDisk = fs.readFileSync(path_unsigned);
           const sign = crypto.createSign('RSA-SHA512');
           sign.write(fileOnDisk);
           sign.end();
           const privkey = fs.readFileSync(Path.join(__dirname, '..', config.image.signing_privkey), 'UTF-8');
           const signedHash = sign.sign(privkey, 'base64');
+
+          console.log('Server signed a new update, packing into tar.');
 
           let signedFile = fs.createWriteStream(path_signed);
           var pack = tar.pack();
@@ -61,6 +66,7 @@ module.exports = function (config, db) {
             }, updateServerOptions);
 
             console.log(updateServerOptions);
+            console.log('Uploading tar to update server.');
 
             rp.post(options)
               .then(function (response) {
