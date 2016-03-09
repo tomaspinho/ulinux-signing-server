@@ -75,7 +75,7 @@ module.exports = function (config, db) {
                 });
           });
 
-          signedFile.on('error', () => {
+          signedFile.on('error', (err) => {
             console.error(err);
             return reply(Boom.badImplementation('Something wrong happened ' +
               'while writing the signed image file to disk'));
