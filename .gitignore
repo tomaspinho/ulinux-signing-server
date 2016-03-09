@@ -3,8 +3,7 @@ node_modules/
 config.js
 *.crt
 *.key
-*.gpg
-signingkeys.pgp
+*.pem
 
 device_images/
 

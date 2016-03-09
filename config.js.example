@@ -17,8 +17,7 @@ module.exports = {
   dev_token: '',
 
   image: {
-    signing_privkey: 'signing_privkey.pgp',
-    signing_privkey_passphrase: 'randompassword',
-    signing_pubkey: 'signing_pubkey.pgp',
+    signing_privkey: 'signing_privkey.pem',
+    signing_pubkey: 'signing_pubkey.pem',
   },
 };

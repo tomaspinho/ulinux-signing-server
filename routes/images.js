@@ -3,9 +3,10 @@
 const Boom = require('boom');
 const Path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const tar = require('tar-stream');
 const _ = require('underscore');
 
-const openpgp = require('openpgp');
 const rp = require('request-promise');
 
 module.exports = function (config, db) {
@@ -23,43 +24,62 @@ module.exports = function (config, db) {
       if (data.file) {
         let name = Date.now() + '_' + data.file.hapi.filename;
         let path_unsigned = Path.join(__dirname, '..', 'device_images/unsigned/', name);
-        //let path_signed = Path.join(__dirname, '..', 'device_images/signed/', name);
-        let path_signed = path_unsigned;
+        let path_signed = Path.join(__dirname, '..', 'device_images/signed/', name + '.tar');
         let file_unsigned = fs.createWriteStream(path_unsigned);
         file_unsigned.on('error', function (err) {
           console.error(err);
           return reply(Boom.badImplementation('Something wrong happened ' +
-            'while writing the image file disk'));
+            'while writing the image file to disk'));
         });
 
         data.file.pipe(file_unsigned);
 
-        data.file.on('end', function (err) {
-          // Sign the image
-          // Post to update server
-          let options = _.extend({
-            url: `https://${config.update_server}/updates/`,
-            headers: {
-              Authorization: `Bearer ${config.update_server_ss_token}`,
-            },
-            formData: {
-              file: fs.createReadStream(path_signed),
-            },
-          }, updateServerOptions);
+        data.file.on('end', function () {
+          let fileOnDisk = fs.readFileSync(path_unsigned);
+          const sign = crypto.createSign('RSA-SHA512');
+          sign.write(fileOnDisk);
+          sign.end();
+          const privkey = fs.readFileSync(Path.join(__dirname, '..', config.image.signing_privkey), 'UTF-8');
+          const signedHash = sign.sign(privkey, 'base64');
 
-          console.log(updateServerOptions);
+          let signedFile = fs.createWriteStream(path_signed);
+          var pack = tar.pack();
+          pack.entry({ name: 'signature.txt' }, signedHash);
+          pack.entry({ name: 'image.img' }, fileOnDisk);
+          pack.finalize();
+          pack.pipe(signedFile);
 
-          rp.post(options)
-            .then(function (response) {
-              console.log(`Succesfully uploded image: ${path_signed}`);
-              return reply({ success: true });
-            })
-            .catch(function (err) {
-              console.log(`Error happened while uploading image: ${path_signed}`,
-                err);
-              console.log(err.cause)
-              return reply({ success: false });
-            });
+          signedFile.on('finish', () => {
+            let options = _.extend({
+              url: `https://${config.update_server}/updates/`,
+              headers: {
+                Authorization: `Bearer ${config.update_server_ss_token}`,
+              },
+              formData: {
+                file: fs.createReadStream(path_signed),
+              },
+            }, updateServerOptions);
+
+            console.log(updateServerOptions);
+
+            rp.post(options)
+              .then(function (response) {
+                console.log(`Succesfully uploded image: ${path_signed}`);
+                return reply({ success: true });
+              })
+              .catch(function (err) {
+                console.log(`Error happened while uploading image: ${path_signed}`,
+                  err);
+                  console.log(err.cause)
+                  return reply({ success: false });
+                });
+          });
+
+          signedFile.on('error', () => {
+            console.error(err);
+            return reply(Boom.badImplementation('Something wrong happened ' +
+              'while writing the signed image file to disk'));
+          });
 
         });
       } else {
