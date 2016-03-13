@@ -4,6 +4,7 @@ config.js
 *.crt
 *.key
 *.pem
+*.log
 
 device_images/
 

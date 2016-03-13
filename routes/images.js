@@ -9,7 +9,7 @@ const _ = require('underscore');
 
 const rp = require('request-promise');
 
-module.exports = function (config, db) {
+module.exports = function (config, db, logger) {
 
   const updateServerOptions = {
     ca: fs.readFileSync(Path.join(__dirname, '..', config.update_server_ca_cert)),
@@ -21,14 +21,16 @@ module.exports = function (config, db) {
     path: '/updates/',
     handler: (request, reply) => {
       let data = request.payload;
-      console.log('Client is uploading a new update.');
+      logger.info('Client (%s) is uploading a new update.',
+        request.info.address);
       if (data.file) {
         let name = Date.now() + '_' + data.file.hapi.filename;
         let path_unsigned = Path.join(__dirname, '..', 'device_images/unsigned/', name);
         let path_signed = Path.join(__dirname, '..', 'device_images/signed/', name + '.tar');
         let file_unsigned = fs.createWriteStream(path_unsigned);
         file_unsigned.on('error', function (err) {
-          console.error(err);
+          logger.error('Something wrong happened while writing the image file' +
+          ' to disk', err);
           return reply(Boom.badImplementation('Something wrong happened ' +
             'while writing the image file to disk'));
         });
@@ -36,7 +38,7 @@ module.exports = function (config, db) {
         data.file.pipe(file_unsigned);
 
         data.file.on('end', function () {
-          console.log('Server is signing a new update.');
+          logger.info('Server is signing a new update.');
 
           let fileOnDisk = fs.readFileSync(path_unsigned);
           const sign = crypto.createSign('RSA-SHA512');
@@ -45,7 +47,7 @@ module.exports = function (config, db) {
           const privkey = fs.readFileSync(Path.join(__dirname, '..', config.image.signing_privkey), 'UTF-8');
           const signedHash = sign.sign(privkey, 'base64');
 
-          console.log('Server signed a new update, packing into tar.');
+          logger.info('Server signed a new update, packing into tar.');
 
           let signedFile = fs.createWriteStream(path_signed);
           var pack = tar.pack();
@@ -65,24 +67,24 @@ module.exports = function (config, db) {
               },
             }, updateServerOptions);
 
-            console.log(updateServerOptions);
-            console.log('Uploading tar to update server.');
+            logger.info('Uploading tar to update server.');
 
             rp.post(options)
               .then(function (response) {
-                console.log(`Succesfully uploded image: ${path_signed}`);
+                logger.info(`Succesfully uploded image: ${path_signed}`);
                 return reply({ success: true });
               })
               .catch(function (err) {
-                console.log(`Error happened while uploading image: ${path_signed}`,
+                logger.error('Error happened while uploading image \'%s\'',
+                  path_signed,
                   err);
-                  console.log(err.cause)
                   return reply({ success: false });
                 });
           });
 
           signedFile.on('error', (err) => {
-            console.error(err);
+            logger.error('Something wrong happened while writing the signed ' +
+              'image file to disk', err);
             return reply(Boom.badImplementation('Something wrong happened ' +
               'while writing the signed image file to disk'));
           });

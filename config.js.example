@@ -14,7 +14,11 @@ module.exports = {
   update_server_ca_cert: 'update_server_ca.crt',
   update_server_ss_token: '',
 
-  dev_token: '',
+  logs: {
+    file: 'ss.log',
+    file_level: 'info', // Winston logger levels
+    console_level: 'info',
+  },
 
   image: {
     signing_privkey: 'signing_privkey.pem',
