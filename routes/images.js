@@ -22,7 +22,7 @@ module.exports = function (config, db, logger) {
     handler: (request, reply) => {
       let data = request.payload;
       logger.info('Client (%s) is uploading a new update.',
-        request.info.address);
+        request.info.remoteAddress);
       if (data.file) {
         let name = Date.now() + '_' + data.file.hapi.filename;
         let path_unsigned = Path.join(__dirname, '..', 'device_images/unsigned/', name);
