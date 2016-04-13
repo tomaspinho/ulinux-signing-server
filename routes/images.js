@@ -101,12 +101,7 @@ module.exports = function (config, db, logger) {
           /* docker run --privileged=true -t -i -v $PWD/files:/opt/files/:ro
                 -v $IMAGE_PATH:/opt/image.img keymgmt
           */
-          docker.run(config.image.container, [], process.stdout,
-            {
-              'HostConfig': {
-                'Privileged': true
-              }
-            },
+          docker.run(config.image.container, [], process.stdout, null,
             {
               'Binds': [
                 `${config.image.container_files}:/opt/files/:ro`,
