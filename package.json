@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "boom": "^3.1.2",
+    "dockerode": "^2.2.10",
     "hapi": "^13.0.0",
     "hapi-auth-bearer-simple": "^3.0.2",
     "mysql": "^2.10.2",
