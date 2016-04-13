@@ -21,7 +21,7 @@ name it after whatever you choose in the `config.js` file.
 Create a `container_files/` folder or whichever name you chose and insert in it:
 
   - a copy of the devices' certificates CA folder, named `device_ca`
-  - a copy of the signing public key, named as `signing_pubkey.pem`
+  - a copy of the signing public key, named as `signing_pubkey.key`
   - a copy of the servers CA's certificate, named as `servers_ca.crt`
 
 This folder is used by the docker container to alter your images and insert any
