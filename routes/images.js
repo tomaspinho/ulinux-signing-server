@@ -78,7 +78,7 @@ module.exports = function (config, db, logger) {
 
               rp.post(options)
                 .then(function (response) {
-                  logger.info(`Succesfully uploded image: ${path_signed}`);
+                  logger.info(`Succesfully uploaded image: ${path_signed}`);
                   return reply({ success: true });
                 })
                 .catch(function (err) {
@@ -101,6 +101,7 @@ module.exports = function (config, db, logger) {
           /* docker run --privileged=true -t -i -v $PWD/files:/opt/files/:ro
                 -v $IMAGE_PATH:/opt/image.img keymgmt
           */
+          logger.debug(`Path unsigned: ${path_unsigned}`);
           docker.run(config.image.container, [], process.stdout, null,
             {
               'Binds': [
