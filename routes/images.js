@@ -45,9 +45,8 @@ module.exports = function (config, db, logger) {
         data.file.on('end', function () {
           logger.info('Server is signing a new update.');
 
-          let fileOnDisk = fs.readFileSync(path_unsigned);
-
           let signAndReply = () => {
+            let fileOnDisk = fs.readFileSync(path_unsigned);
             const sign = crypto.createSign('RSA-SHA512');
             sign.write(fileOnDisk);
             sign.end();
